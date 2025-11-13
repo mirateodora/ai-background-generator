@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# PyCharm project files
+.idea/
+
+# macOS / Windows / Linux system files
+.DS_Store
+Thumbs.db
+
+# Logs and cache
+*.log
+*.tmp
+.cache/
+.pytest_cache/
+
+# Jupyter checkpoints (if any)
+.ipynb_checkpoints/
+
+# Build / distribution directories
+build/
+dist/
+*.egg-info/
+
+# Temporary images or test outputs
+assets/temp/
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.gif
+
+# VSCode workspace (optional)
+.vscode/
+
+# Matplotlib cache
+.matplotlib/
+
+# Local settings
+settings.json
