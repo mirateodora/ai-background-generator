@@ -32,11 +32,11 @@ dist/
 
 # Temporary images or test outputs
 assets/temp/
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.gif
+#*.png
+#*.jpg
+#*.jpeg
+#*.bmp
+#*.gif
 
 # VSCode workspace (optional)
 .vscode/
