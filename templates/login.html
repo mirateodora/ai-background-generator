@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <form class="w-25 mx-auto mt-5 text-center">
+
+        <img class="d-block mx-auto mb-4 img-fluid" 
+             src="{{ url_for('static', filename='images/cover.jpg') }}" 
+             alt="Cover Image" 
+             style="max-width: 250px; height: auto;">
+
+        <h1 class="h3 mb-3 fw-normal"><b>Please sign in</b></h1>
+
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="floatingInput" placeholder="Email" required>
+            <label for="floatingInput">Email address</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="password" class="form-control" id="floatingPassword" placeholder="Password" required>
+            <label for="floatingPassword">Password</label>
+        </div>
+
+        <p>
+            Don’t have an account?  
+            <a href="{{ url_for('signup') }}"><b><u>Sign-up</u></b></a>
+        </p>
+
+        <button class="btn btn-primary w-100 py-2" type="submit">
+            <b>Log in</b>
+        </button>
+
+        <p class="mt-5 mb-3 text-body-secondary">© 2017–2025</p>
+
+    </form>
+</div>
+
+{% endblock %}

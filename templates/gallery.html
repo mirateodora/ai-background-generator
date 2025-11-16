@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+<div class="album py-5 custom-album">
+    <div class="container">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+
+            {% for i in range(9) %}
+            <div class="col">
+                <div class="card shadow-sm">
+                    <img src="static/images/cover.jpg">
+                        <title>Placeholder</title>
+                        <rect width="100%" height="100%" fill="#55595c"></rect>
+
+                    <div class="card-body">
+                        <p class="card-text">
+                            Image Prompt Title
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-primary"  style="color: #ffffff;">View</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-outline-danger">Delete</button>
+                            </div>
+                            <small class="text-body-secondary">9 mins</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

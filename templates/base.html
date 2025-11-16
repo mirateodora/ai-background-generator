@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}AI Background Generator{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Your global style.css -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="container">
+        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+
+            <a href="{{ url_for('index') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+                <span class="fs-4"><b>AI Background Generator</b></span>
+            </a>
+
+            <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a href="{{ url_for('signup') }}" class="nav-link {% if active=='signup' %}active{% endif %}">
+                        <b>Sign-up</b>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('login') }}" class="nav-link {% if active=='login' %}active{% endif %}">
+                        <b>Login</b>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{url_for('gallery')}}" class="nav-link {% if active=='gallery' %}active{% endif %}">
+                        <b>Gallery</b>
+                    </a>
+                </li>
+
+                <!-- Example user dropdown -->
+                <li class="nav-item dropdown text-end">
+                    <a href="#" class="d-block text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                        <img src="static/images/logged.png" width="32" height="32" class="rounded-circle">
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Sign out</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT BLOCK -->
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+        <p class="mb-1">© 2025 Mira-Teodora Culda</p>
+        <ul class="list-inline">
+            <li class="list-inline-item"><a href="#">GitHub</a></li>
+            <li class="list-inline-item"><a href="#">LinkedIn</a></li>
+            <li class="list-inline-item"><a href="#">Portfolio</a></li>
+        </ul>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Page-specific scripts -->
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

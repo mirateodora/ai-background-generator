@@ -1,203 +1,130 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <title> AI Background Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <style>
-        body {
-        background-image: url('static/images/background.jpg'); /* path to your image */
-        background-size: cover;      /* make it cover the whole area */
-        background-position: center; /* center the image */
-        background-repeat: no-repeat; /* don't tile */
-        background-attachment: fixed; /* optional: keep fixed while scrolling */
-    }
-    /* Primary button color */
-    .btn-primary {
-        background-color: #a50b5e !important; /* your custom color */
-        border-color: #a50b5e !important;
-    }
+{% extends "base.html" %}
+{% block title %}AI Background Generator{% endblock %}
 
-    .btn-primary:hover, .btn-primary:focus {
-        background-color: #a50b5e !important; /* darker hover color */
-        border-color: #a50b5e !important;
-    }
+{% block content %}
 
-    /* Links and nav items */
-    .nav-link, a {
-        color: #a50b5e !important; /* your color */
-    }
-
-    .nav-link.active {
-        background-color: #a50b5e !important;
-        color: #fff !important;
-    }
-
-    /* Optional: text highlights */
-    h1, h2, h3, h4, h5, h6, .lead {
-        color: #e5e5e5; /* can customize separately */
-    }
-</style>
-</head>
-<body>
-    <div class="container">
-        <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-        <svg class="bi me-2" width="40" height="32" aria-hidden="true">
-            <use xlink:href="#bootstrap"></use>
-        </svg>
-        <span class="fs-4"><b>AI Background Generator</b></span>
-        </a>
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a href="#" class="nav-link active" aria-current="page"><b>Sign-up</b></a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link"><b>Login</b></a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link"><b>Gallery</b></a>
-            </li>
-        </ul>
-        </header>
+<main>
+    <div class="py-5 text-center">
+        <img class="d-block mx-auto mb-4 img-fluid" 
+             src="{{ url_for('static', filename='images/cover.jpg') }}" 
+             alt="Cover Image" 
+             style="max-width: 250px; height: auto;">
+        <h1 class="h2">Create Stunning Custom Backgrounds</h1>
+        <p class="lead">
+            Generate unique, themed backgrounds for your devices in seconds. Customize with calendars, quotes, or blur effects and create AI-powered wallpapers tailored to your style and device.
+        </p>
     </div>
 
-    <div class="container">
-    <main>
-        <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4 img-fluid" src="static/images/cover.jpg" alt="Cover Image" style="max-width: 250px; height: auto;">
-            <h1 class="h2">Create Stunning Custom Backgrounds</h1>
-            <p class="lead">
-            Generate unique, themed backgrounds for your devices in seconds. Customize with calendars, quotes, or blur effects and create AI-powered wallpapers tailored to your style and device.    </p>
+    <div class="row g-5">
+        <div class="col-md-5 col-lg-4 order-md-last">
+            <img class="d-block mx-auto mb-4 img-fluid" 
+                 src="{{ url_for('static', filename='images/quote.jpg') }}" 
+                 alt="Quote Image" 
+                 style="max-width: 250px; height: auto;">
         </div>
 
+        <div class="col-md-7 col-lg-8">
+            <h4 class="mb-3">✨Make It Yours✨</h4>
+            <form class="needs-validation" novalidate>
 
-        <div class="row g-5">
-            <div class="col-md-5 col-lg-4 order-md-last">
-                <img class="d-block mx-auto mb-4 img-fluid" src="static/images/quote.jpg" alt="Cover Image" style="max-width: 250px; height: auto;">
-            </div>
+                <div class="row g-3">
 
-            <div class="col-md-7 col-lg-8">
-                <h4 class="mb-3">✨Make It Yours✨</h4>
-                <form class="needs-validation" novalidate="">
-                    <div class="row g-3">
-                         <div class="col-md-6 py-3">
-                            <label for="country" class="form-label">Device Brand</label>
-                            <select class="form-select" id="brand" required="">
-                                <option value="">Choose...</option>
-                                <option>United States</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select your device brand.
-                            </div>
-                        </div>
-
-                         <div class="col-md-6 py-3">
-                            <label for="country" class="form-label">Device Model</label>
-                            <select class="form-select" id="model" required="">
-                                <option value="">Choose...</option>
-                                <option>United States</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select your device brand.
-                            </div>
-                        </div>
-
-                         <div class="col-md-12 py-3">
-                            <label for="country" class="form-label">Theme</label>
-                            <select class="form-select" id="theme" required="">
-                                <option value="">Choose...</option>
-                                <option>United States</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select the wallpaper theme.
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 form-check py-3">
-                            <input type="checkbox" class="form-check-input" id="calendar">
-                            <label class="form-check-label" for="calendar">Include a monthly calendar.</label>
-                        </div>
-
-                        <div class="col-md-6 py-3" id="monthDropdown" style="display: none;">
-                            <label for="country" class="form-label">Month</label>
-                            <select class="form-select" id="month" required="">
-                                <option value="">Choose...</option>
-                                <option>United States</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please select the month.
-                            </div>
-                        </div>
-
-
-
-                        <div class="col-md-6 form-check py-3">
-                            <input type="checkbox" class="form-check-input" id="quote">
-                            <label class="form-check-label" for="quote">Include a quote.</label>
-                        </div>
-
-                        <div class="col-12 py-3" id="quoteInput" style="display: none;">
-                            <label for="quoteText" class="form-label">
-                                Quote
-                            </label>
-                            <input type="text" class="form-control" id="quoteText" placeholder="Ran out of ideas? Leave empty for a surprise.">
-                            <div class="invalid-feedback">
-                                Please enter a quote.
-                            </div>
+                    <div class="col-md-6 py-3">
+                        <label for="brand" class="form-label">Device Brand</label>
+                        <select class="form-select" id="brand" required>
+                            <option value="">Choose...</option>
+                            <option>United States</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select your device brand.
                         </div>
                     </div>
 
-                    <hr class="my-4">
-
-                    <div class="form-check py-3">
-                        <input type="checkbox" class="form-check-input" id="same-address">
-                        <label class="form-check-label" for="same-address">Blur effect</label>
+                    <div class="col-md-6 py-3">
+                        <label for="model" class="form-label">Device Model</label>
+                        <select class="form-select" id="model" required>
+                            <option value="">Choose...</option>
+                            <option>United States</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select your device model.
+                        </div>
                     </div>
 
-                    <br>
+                    <div class="col-md-12 py-3">
+                        <label for="theme" class="form-label">Theme</label>
+                        <select class="form-select" id="theme" required>
+                            <option value="">Choose...</option>
+                            <option>United States</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select the wallpaper theme.
+                        </div>
+                    </div>
 
-                    <button class="w-100 btn btn-primary btn-lg py-3" type="submit">Design Screen</button>
-                </form>
-            </div>
+                    <div class="col-md-6 form-check py-3">
+                        <input type="checkbox" class="form-check-input" id="calendar">
+                        <label class="form-check-label" for="calendar">Include a monthly calendar.</label>
+                    </div>
+
+                    <div class="col-md-6 py-3" id="monthDropdown" style="display: none;">
+                        <label for="month" class="form-label">Month</label>
+                        <select class="form-select" id="month" required>
+                            <option value="">Choose...</option>
+                            <option>United States</option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Please select the month.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 form-check py-3">
+                        <input type="checkbox" class="form-check-input" id="quote">
+                        <label class="form-check-label" for="quote">Include a quote.</label>
+                    </div>
+
+                    <div class="col-12 py-3" id="quoteInput" style="display: none;">
+                        <label for="quoteText" class="form-label">Quote</label>
+                        <input type="text" class="form-control" id="quoteText" placeholder="Ran out of ideas? Leave empty for a surprise.">
+                        <div class="invalid-feedback">
+                            Please enter a quote.
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr class="my-4">
+
+                <div class="form-check py-3">
+                    <input type="checkbox" class="form-check-input" id="blurEffect">
+                    <label class="form-check-label" for="blurEffect">Blur effect</label>
+                </div>
+
+                <button class="w-100 btn btn-primary btn-lg py-3" type="submit">
+                    Design Screen
+                </button>
+
+            </form>
         </div>
-    </main>
+    </div>
+</main>
 
-    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-        <p class="mb-1">© 2025 Mira-Teodora Culda</p>
-        <ul class="list-inline">
-            <li class="list-inline-item"><a href="#">GitHub</a></li>
-            <li class="list-inline-item"><a href="#">LinkedIn</a></li>
-            <li class="list-inline-item"><a href="#">Portfolio</a></li>
-        </ul>
-    </footer>
+{% endblock %}
 
-</div>
-    <script>
-                            const checkbox = document.getElementById('calendar');
-                            const dropdown = document.getElementById('monthDropdown');
+{% block scripts %}
+<script>
+    const calendarCheckbox = document.getElementById('calendar');
+    const monthDropdown = document.getElementById('monthDropdown');
 
-                            checkbox.addEventListener('change', function() {
-                            if (this.checked) {
-                                dropdown.style.display = 'block';
-                            } else {
-                                dropdown.style.display = 'none';
-                            }
-                        });
-                        </script>
+    calendarCheckbox.addEventListener('change', function() {
+        monthDropdown.style.display = this.checked ? 'block' : 'none';
+    });
 
-    <script>
-                            const checkbox2 = document.getElementById('quote');
-                            const dropdown2 = document.getElementById('quoteInput');
+    const quoteCheckbox = document.getElementById('quote');
+    const quoteInput = document.getElementById('quoteInput');
 
-                            checkbox2.addEventListener('change', function() {
-                            if (this.checked) {
-                                dropdown2.style.display = 'block';
-                            } else {
-                                dropdown2.style.display = 'none';
-                            }
-                        });
-                        </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-</body>
-</html>
+    quoteCheckbox.addEventListener('change', function() {
+        quoteInput.style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+/* ---------------------------
+   GLOBAL BACKGROUND
+---------------------------- */
+body {
+    background-image: url('/static/images/background.jpg'); /* adjust path if needed */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: #e5e5e5; /* default light text */
+}
+
+/* Optional overlay for legibility */
+/*
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+}
+*/
+
+
+/* ---------------------------
+   COLOR PALETTE
+   Primary color: #a50b5e
+---------------------------- */
+
+/* Buttons */
+.btn-primary {
+    background-color: #a50b5e !important;
+    border-color: #a50b5e !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #8e094f !important;
+    border-color: #8e094f !important;
+}
+
+/* Links */
+a,
+.nav-link {
+    color: #a50b5e !important;
+}
+
+a:hover,
+.nav-link:hover {
+    color: #c31674 !important;
+}
+
+/* Active nav item */
+.nav-link.active {
+    background-color: #a50b5e !important;
+    color: #fff !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.lead {
+    color: #e5e5e5;
+}
+
+/* Form labels */
+.form-label {
+    color: #e5e5e5;
+}
+
+/* Placeholder text (light gray) */
+::placeholder {
+    color: #ccc !important;
+    opacity: 1;
+}
+
+/* Inputs */
+.form-control,
+.form-select {
+    background-color: rgba(0, 0, 0, 0.45);
+    border: 1px solid #444;
+    color: #fff;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #a50b5e;
+    box-shadow: 0 0 0 0.2rem rgba(165, 11, 94, 0.25);
+}
+
+/* Checkbox styling */
+.form-check-input:checked {
+    background-color: #a50b5e;
+    border-color: #a50b5e;
+}
+
+/* Footer links */
+footer a {
+    color: #a50b5e !important;
+}
+
+footer a:hover {
+    color: #c31674 !important;
+}
+
+.fs-4{
+    color: #ffffff !important;
+}
+
+/* Make the album background transparent */
+.custom-album {
+    background-color: transparent !important;
+}
