@@ -4,27 +4,48 @@
 {% block content %}
 <div class="album py-5 custom-album">
     <div class="container">
+
+        {% if images|length == 0 %}
+            <p class="text-center mt-5 fs-4 text-muted">
+                You haven’t generated any images yet.
+            </p>
+        {% endif %}
+
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
 
-            {% for i in range(9) %}
+            {% for image in images %}
             <div class="col">
                 <div class="card shadow-sm">
-                    <img src="{{ url_for('static', filename='images/cover.jpg') }}">
-                        <title>Placeholder</title>
-                        <rect width="100%" height="100%" fill="#55595c"></rect>
+
+                    <!-- Thumbnail -->
+                    <img src="{{ image.file_path }}" class="card-img-top" alt="{{ image.title }}">
 
                     <div class="card-body">
                         <p class="card-text">
-                            Image Prompt Title
+                            {{ image.title or "Untitled Image" }}
                         </p>
+
                         <div class="d-flex justify-content-between align-items-center">
+
                             <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-outline-secondary btn-primary"  style="color: #ffffff;">View</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary btn-outline-danger">Delete</button>
+                                <a href="{{ url_for('gallery.view_image', image_id=image.id) }}"
+                                   class="btn btn-sm btn-primary text-white">
+                                    View
+                                </a>
+
+                                <a href="{{ url_for('gallery.delete_image', image_id=image.id) }}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </a>
                             </div>
-                            <small class="text-body-secondary">9 mins</small>
+
+                            <small class="text-body-secondary">
+                                {{ image.created_at.strftime("%Y-%m-%d %H:%M") }}
+                            </small>
+
                         </div>
                     </div>
+
                 </div>
             </div>
             {% endfor %}
