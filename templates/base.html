@@ -23,17 +23,17 @@
 
             <ul class="nav nav-pills">
                 <li class="nav-item">
-                    <a href="{{ url_for('signup') }}" class="nav-link {% if active=='signup' %}active{% endif %}">
+                    <a href="{{ url_for('auth.signup') }}" class="nav-link {% if active=='signup' %}active{% endif %}">
                         <b>Sign-up</b>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ url_for('login') }}" class="nav-link {% if active=='login' %}active{% endif %}">
+                    <a href="{{ url_for('auth.login') }}" class="nav-link {% if active=='login' %}active{% endif %}">
                         <b>Login</b>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{url_for('gallery')}}" class="nav-link {% if active=='gallery' %}active{% endif %}">
+                    <a href="{{url_for('gallery.gallery_home')}}" class="nav-link {% if active=='gallery' %}active{% endif %}">
                         <b>Gallery</b>
                     </a>
                 </li>
@@ -41,7 +41,7 @@
                 <!-- Example user dropdown -->
                 <li class="nav-item dropdown text-end">
                     <a href="#" class="d-block text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-                        <img src="static/images/logged.png" width="32" height="32" class="rounded-circle">
+                        <img src="{{ url_for('static', filename='images/logged.png') }}" width="32" height="32" class="rounded-circle">
                     </a>
 
                     <ul class="dropdown-menu">
