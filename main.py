@@ -1,22 +1,17 @@
-
-from diffusers import StableDiffusionPipeline
 import os
 import uuid
+import textwrap
 from PIL import Image as PILImage, ImageFilter, ImageDraw, ImageFont, ImageOps
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from config import Config
 from database import db
 from routes.auth_routes import auth_bp
 from routes.gallery_routes import gallery_bp
-from models import Device, Image  # <-- Added Image here
-import textwrap
+from models import Device, Image, Quote, ThemePrompt
 
-# ... (Keep your diffusers setup here) ...
+# --- Import the Hugging Face Client ---
+from huggingface_hub import InferenceClient
 
-print("Loading Stable Diffusion model... (This might take a minute)")
-pipe = StableDiffusionPipeline.from_pretrained('runwayml/stable-diffusion-v1-5')
-pipe = pipe.to('cpu') # Uses CPU, which is slower but works without a dedicated GPU
-print("Model loaded successfully!")
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -24,9 +19,19 @@ app.config.from_object(Config)
 # Initialize database with app
 db.init_app(app)
 
+# Initialize the Hugging Face Cloud API using your hidden PyCharm variable
+print("Connecting to Hugging Face API...")
+hf_token = app.config.get('HF_TOKEN')
+if not hf_token:
+    print("WARNING: HF_TOKEN environment variable is missing!")
+
+client = InferenceClient(model="stabilityai/stable-diffusion-xl-base-1.0", token=hf_token)
+print("Connected!")
+
 # Register Blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(gallery_bp, url_prefix='/gallery')
+
 
 # Optional: basic homepage route
 @app.route('/')
@@ -50,11 +55,7 @@ def index():
         'Abstract', 'Nature', 'Minimal', 'Dark', 'Light', 'Space', 'Retro'
     ]
 
-
     return render_template('index.html', active='index', brands=brands, models_by_brand=models_by_brand, themes=themes)
-
-
-import textwrap  # Add this to your imports at the top of main.py if you haven't already
 
 
 @app.route('/generate', methods=['POST'])
@@ -72,19 +73,37 @@ def generate():
     quote_text = request.form.get('quoteText')
     blur_effect = request.form.get('blurEffect')
 
+    if quote_checked == 'on' and not quote_text:
+        # db.func.random() randomly shuffles the table, and .first() grabs the top one!
+        random_quote = Quote.query.order_by(db.func.random()).first()
+
+        if random_quote:
+            quote_text = random_quote.text
+        else:
+            # A tiny safety net just in case the database table is ever empty
+            quote_text = "Keep going."
+
     # Get target resolution from database
     target_device = Device.query.filter_by(brand=brand, model=model).first()
     if not target_device:
         flash("Error: Device not found.", "danger")
         return redirect(url_for('index'))
 
-    # --- STEP 1: Generate the base image (with aesthetic prompts) ---
-    prompt = f"Beautiful {theme} background wallpaper for phone, masterpiece, stunning digital art, highly detailed, vibrant colors, 4k resolution, trending on artstation"
-    negative_prompt = "ugly, blurry, bad anatomy, text, watermark, signature, cropped, low resolution, grainy, noisy"
+    random_prompt_obj = ThemePrompt.query.filter_by(theme=theme).order_by(db.func.random()).first()
 
-    print(f"Generating aesthetic image: '{prompt}'...")
-    # num_inference_steps=35 gives a good balance of quality and generation speed
-    base_image = pipe(prompt, negative_prompt=negative_prompt, num_inference_steps=35).images[0]
+    if random_prompt_obj:
+        prompt = random_prompt_obj.prompt_text
+    else:
+        # Fallback just in case a theme is missing from the database
+        prompt = f"Beautiful {theme} background wallpaper for phone, masterpiece, stunning digital art, highly detailed, 4k resolution"
+    print(f"Sending request to Hugging Face Cloud: '{prompt}'...")
+    try:
+        # The API instantly returns a Pillow image!
+        base_image = client.text_to_image(prompt)
+    except Exception as e:
+        print(f"API Error: {e}")
+        flash("The AI is currently busy or warming up. Please try again in 30 seconds!", "danger")
+        return redirect(url_for('index'))
 
     # --- STEP 2: Crop to desired size ---
     target_size = (target_device.width, target_device.height)
@@ -98,7 +117,7 @@ def generate():
     if quote_checked == 'on' and quote_text:
         draw = ImageDraw.Draw(final_image)
 
-        # Load your downloaded font (Make sure this filename matches exactly!)
+        # Load your downloaded font
         font_path = os.path.join(app.root_path, 'static', 'fonts', 'CalSans-Regular.ttf')
         try:
             font = ImageFont.truetype(font_path, size=80)
@@ -109,30 +128,27 @@ def generate():
         # Wrap the text to fit the screen (approx 18 characters per line for size 80 font)
         lines = textwrap.wrap(quote_text, width=18)
 
-        # Calculate the height of each line to find the total text block height
+        # Calculate heights
         line_heights = [draw.textbbox((0, 0), line, font=font)[3] - draw.textbbox((0, 0), line, font=font)[1] for line
                         in lines]
         line_spacing = 15
         total_text_height = sum(line_heights) + (line_spacing * (len(lines) - 1))
 
-        # Find the starting Y coordinate to center the whole block of text vertically
+        # Find starting Y coordinate
         y = (target_device.height - total_text_height) / 2
-
         shadow_offset = 4
 
-        # Draw each line individually, centered horizontally
+        # Draw text
         for i, line in enumerate(lines):
             left, top, right, bottom = draw.textbbox((0, 0), line, font=font)
             text_width = right - left
             x = (target_device.width - text_width) / 2
 
-            # Draw shadow
+            # Shadow
             draw.text((x + shadow_offset, y + shadow_offset), line, font=font, fill="black")
-
-            # Draw white text
+            # White text
             draw.text((x, y), line, font=font, fill="white")
 
-            # Move down for the next line
             y += line_heights[i] + line_spacing
 
     # --- STEP 5: Save File & Update Database ---
@@ -154,6 +170,7 @@ def generate():
 
     flash("Wallpaper generated successfully!", "success")
     return redirect(url_for('gallery.gallery_home'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

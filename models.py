@@ -42,3 +42,22 @@ class Image(db.Model):
 
     def __repr__(self):
         return f"<Image {self.file_path} by User {self.user_id}>"
+
+class Quote(db.Model):
+    __tablename__ = 'quotes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"<Quote {self.id}>"
+
+class ThemePrompt(db.Model):
+    __tablename__ = 'theme_prompts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    theme = db.Column(db.String(50), nullable=False)
+    prompt_text = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"<ThemePrompt {self.theme}>"
