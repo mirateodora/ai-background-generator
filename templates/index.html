@@ -4,6 +4,14 @@
 {% block content %}
 
 <main>
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(33, 37, 41, 0.9); z-index: 1050; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(5px);">
+        <div class="spinner-border text-primary" style="width: 5rem; height: 5rem; border-width: 0.4rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h2 class="text-white mt-4"><b>The magic is happening...</b></h2>
+        <p class="text-white-50 mt-2">Please do not refresh the page. Generating AI art takes a moment.</p>
+    </div>
+
     <div class="py-5 text-center">
         <img class="d-block mx-auto mb-4 img-fluid" 
              src="{{ url_for('static', filename='images/cover.jpg') }}" 
@@ -11,7 +19,7 @@
              style="max-width: 250px; height: auto;">
         <h1 class="h2">Create Stunning Custom Backgrounds</h1>
         <p class="lead">
-            Generate unique, themed backgrounds for your devices in seconds. Customize with calendars, quotes, or blur effects and create AI-powered wallpapers tailored to your style and device.
+            Generate unique, themed backgrounds for your devices in seconds. Customize with quotes or blur effects and create AI-powered wallpapers tailored to your style and device.
         </p>
     </div>
 
@@ -25,15 +33,19 @@
 
         <div class="col-md-7 col-lg-8">
             <h4 class="mb-3">✨Make It Yours✨</h4>
-            <form class="needs-validation" novalidate>
+            <form class="needs-validation" method="POST" action="{{ url_for('generate') }}" novalidate>
 
                 <div class="row g-3">
 
                     <div class="col-md-6 py-3">
                         <label for="brand" class="form-label">Device Brand</label>
-                        <select class="form-select" id="brand" required>
+                        <select class="form-select" id="brand" name="brand" required>
                             <option value="">Choose...</option>
-                            <option>United States</option>
+                                {% for b in brands %}
+                            <option value="{{ b }}">{{ b }}</option>
+                            {% else %}
+                            <option disabled>No brands available</option>
+                            {% endfor %}
                         </select>
                         <div class="invalid-feedback">
                             Please select your device brand.
@@ -42,9 +54,8 @@
 
                     <div class="col-md-6 py-3">
                         <label for="model" class="form-label">Device Model</label>
-                        <select class="form-select" id="model" required>
-                            <option value="">Choose...</option>
-                            <option>United States</option>
+                        <select class="form-select" id="model" name="model" required>
+                            <option value="">Choose a brand first...</option>
                         </select>
                         <div class="invalid-feedback">
                             Please select your device model.
@@ -53,39 +64,28 @@
 
                     <div class="col-md-12 py-3">
                         <label for="theme" class="form-label">Theme</label>
-                        <select class="form-select" id="theme" required>
+                        <select class="form-select" id="theme" name="theme" required>
                             <option value="">Choose...</option>
-                            <option>United States</option>
+                            {% for t in themes %}
+                            <option value="{{ t }}">{{ t }}</option>
+                            {% else %}
+                            <option disabled>No themes available</option>
+                            {% endfor %}
                         </select>
                         <div class="invalid-feedback">
                             Please select the wallpaper theme.
                         </div>
                     </div>
 
-                    <div class="col-md-6 form-check py-3">
-                        <input type="checkbox" class="form-check-input" id="calendar">
-                        <label class="form-check-label" for="calendar">Include a monthly calendar.</label>
-                    </div>
-
-                    <div class="col-md-6 py-3" id="monthDropdown" style="display: none;">
-                        <label for="month" class="form-label">Month</label>
-                        <select class="form-select" id="month" required>
-                            <option value="">Choose...</option>
-                            <option>United States</option>
-                        </select>
-                        <div class="invalid-feedback">
-                            Please select the month.
-                        </div>
-                    </div>
 
                     <div class="col-md-6 form-check py-3">
-                        <input type="checkbox" class="form-check-input" id="quote">
+                        <input type="checkbox" class="form-check-input" id="quote" name="quote">
                         <label class="form-check-label" for="quote">Include a quote.</label>
                     </div>
 
                     <div class="col-12 py-3" id="quoteInput" style="display: none;">
                         <label for="quoteText" class="form-label">Quote</label>
-                        <input type="text" class="form-control" id="quoteText" placeholder="Ran out of ideas? Leave empty for a surprise.">
+                        <input type="text" class="form-control" id="quoteText" name="quoteText" placeholder="Ran out of ideas? Leave empty for a surprise.">
                         <div class="invalid-feedback">
                             Please enter a quote.
                         </div>
@@ -96,7 +96,7 @@
                 <hr class="my-4">
 
                 <div class="form-check py-3">
-                    <input type="checkbox" class="form-check-input" id="blurEffect">
+                    <input type="checkbox" class="form-check-input" id="blurEffect" name="blurEffect">
                     <label class="form-check-label" for="blurEffect">Blur effect</label>
                 </div>
 
@@ -113,18 +113,70 @@
 
 {% block scripts %}
 <script>
-    const calendarCheckbox = document.getElementById('calendar');
-    const monthDropdown = document.getElementById('monthDropdown');
-
-    calendarCheckbox.addEventListener('change', function() {
-        monthDropdown.style.display = this.checked ? 'block' : 'none';
-    });
 
     const quoteCheckbox = document.getElementById('quote');
     const quoteInput = document.getElementById('quoteInput');
 
     quoteCheckbox.addEventListener('change', function() {
         quoteInput.style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Models mapping passed from server as JSON string
+    const modelsByBrand = {{ models_by_brand | tojson | safe }};
+
+    const brandSelect = document.getElementById('brand');
+    const modelSelect = document.getElementById('model');
+
+    function clearOptions(selectEl) {
+        while (selectEl.options.length > 0) {
+            selectEl.remove(0);
+        }
+    }
+
+    function populateModels(brand) {
+        clearOptions(modelSelect);
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.text = brand ? 'Choose...' : 'Choose a brand first...';
+        modelSelect.appendChild(defaultOption);
+
+        if (!brand) return;
+
+        const models = modelsByBrand[brand] || [];
+        if (models.length === 0) {
+            const opt = document.createElement('option');
+            opt.disabled = true;
+            opt.text = 'No models available';
+            modelSelect.appendChild(opt);
+            return;
+        }
+
+        models.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.text = m;
+            modelSelect.appendChild(opt);
+        });
+    }
+
+    brandSelect.addEventListener('change', function() {
+        populateModels(this.value);
+    });
+
+    // If a brand is preselected, populate models on load
+    if (brandSelect.value) {
+        populateModels(brandSelect.value);
+    }
+
+    // --- Loading Screen Logic ---
+    const form = document.querySelector('form.needs-validation');
+    const overlay = document.getElementById('loadingOverlay');
+
+    form.addEventListener('submit', function(event) {
+        // Only show the overlay if the form is fully valid (all required fields are filled)
+        if (form.checkValidity()) {
+            overlay.style.display = 'flex';
+        }
     });
 </script>
 {% endblock %}
