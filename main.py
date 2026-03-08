@@ -1,7 +1,7 @@
 import os
 import uuid
 import textwrap
-from PIL import Image as PILImage, ImageFilter, ImageDraw, ImageFont, ImageOps
+from PIL import Image as PILImage, ImageFilter, ImageDraw, ImageFont, ImageOps, ImageStat
 from flask import Flask, render_template, request, session, redirect, url_for, flash
 from config import Config
 from database import db
@@ -50,10 +50,17 @@ def index():
         brands = []
         models_by_brand = {}
 
-    # Themes: keep as a simple list here (could be a DB table in the future)
-    themes = [
-        'Abstract', 'Nature', 'Minimal', 'Dark', 'Light', 'Space', 'Retro'
-    ]
+    # --- Fetch themes dynamically from the database! ---
+    try:
+        # Query distinct themes from the ThemePrompt table
+        theme_prompts = ThemePrompt.query.with_entities(ThemePrompt.theme).distinct().all()
+        themes = sorted([t.theme for t in theme_prompts])
+    except Exception:
+        themes = []
+
+    # Fallback just in case the table is empty or missing
+    if not themes:
+        themes = ['Abstract', 'Nature', 'Minimal', 'Dark', 'Light', 'Space', 'Retro']
 
     return render_template('index.html', active='index', brands=brands, models_by_brand=models_by_brand, themes=themes)
 
@@ -96,6 +103,7 @@ def generate():
     else:
         # Fallback just in case a theme is missing from the database
         prompt = f"Beautiful {theme} background wallpaper for phone, masterpiece, stunning digital art, highly detailed, 4k resolution"
+
     print(f"Sending request to Hugging Face Cloud: '{prompt}'...")
     try:
         # The API instantly returns a Pillow image!
@@ -113,10 +121,8 @@ def generate():
     if blur_effect == 'on':
         final_image = final_image.filter(ImageFilter.GaussianBlur(radius=5))
 
-    # --- STEP 4: Write the quote (with wrapping & custom font) ---
+    # --- STEP 4: Write the quote (with Black Canva-style Neon Glow) ---
     if quote_checked == 'on' and quote_text:
-        draw = ImageDraw.Draw(final_image)
-
         # Load your downloaded font
         font_path = os.path.join(app.root_path, 'static', 'fonts', 'CalSans-Regular.ttf')
         try:
@@ -125,31 +131,65 @@ def generate():
             print(f"WARNING: Could not find font at {font_path}! Falling back to default font.")
             font = ImageFont.load_default()
 
-        # Wrap the text to fit the screen (approx 18 characters per line for size 80 font)
+        # Wrap the text
         lines = textwrap.wrap(quote_text, width=18)
 
-        # Calculate heights
-        line_heights = [draw.textbbox((0, 0), line, font=font)[3] - draw.textbbox((0, 0), line, font=font)[1] for line
-                        in lines]
+        # We need a temporary draw object just to measure the text
+        temp_draw = ImageDraw.Draw(final_image)
+        line_heights = [
+            temp_draw.textbbox((0, 0), line, font=font)[3] - temp_draw.textbbox((0, 0), line, font=font)[1] for line
+            in lines]
         line_spacing = 15
         total_text_height = sum(line_heights) + (line_spacing * (len(lines) - 1))
+        start_y = (target_device.height - total_text_height) / 2
 
-        # Find starting Y coordinate
-        y = (target_device.height - total_text_height) / 2
-        shadow_offset = 4
+        # --- COMPLEMENTARY COLOR CALCULATION ---
+        img_width, img_height = final_image.size
+        center_area = final_image.crop((img_width * 0.1, img_height * 0.3, img_width * 0.9, img_height * 0.7))
 
-        # Draw text
+        avg_r, avg_g, avg_b = center_area.resize((1, 1)).getpixel((0, 0))
+        main_color = (255 - avg_r, 255 - avg_g, 255 - avg_b)
+
+        # Locked the glow color to a strong, solid black
+        glow_color = (0, 0, 0, 255)
+
+        # --- CREATING THE EXTREME BLACK NEON GLOW EFFECT ---
+        # 1. Convert the main image to RGBA so it supports transparency
+        final_image = final_image.convert("RGBA")
+
+        # 2. Create a totally blank, transparent layer for the shadow
+        glow_layer = PILImage.new("RGBA", final_image.size, (0, 0, 0, 0))
+        glow_draw = ImageDraw.Draw(glow_layer)
+
+        # 3. Draw the thick text onto the transparent layer
+        y = start_y
         for i, line in enumerate(lines):
-            left, top, right, bottom = draw.textbbox((0, 0), line, font=font)
+            left, top, right, bottom = glow_draw.textbbox((0, 0), line, font=font)
             text_width = right - left
             x = (target_device.width - text_width) / 2
-
-            # Shadow
-            draw.text((x + shadow_offset, y + shadow_offset), line, font=font, fill="black")
-            # White text
-            draw.text((x, y), line, font=font, fill="white")
-
+            # Added stroke_width=4 to fatten up the text before blurring
+            glow_draw.text((x, y), line, font=font, fill=glow_color, stroke_width=4, stroke_fill=glow_color)
             y += line_heights[i] + line_spacing
+
+        # 4. Blur that entire transparent layer!
+        glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(radius=10))
+
+        # 5. THE DOUBLE STAMP: Paste the blurry glow layer TWICE onto our main image
+        final_image = PILImage.alpha_composite(final_image, glow_layer)
+        final_image = PILImage.alpha_composite(final_image, glow_layer)
+
+        # 6. Now draw the crisp, colorful text exactly on top
+        main_draw = ImageDraw.Draw(final_image)
+        y = start_y
+        for i, line in enumerate(lines):
+            left, top, right, bottom = main_draw.textbbox((0, 0), line, font=font)
+            text_width = right - left
+            x = (target_device.width - text_width) / 2
+            main_draw.text((x, y), line, font=font, fill=main_color)
+            y += line_heights[i] + line_spacing
+
+        # Convert back to standard RGB before saving
+        final_image = final_image.convert("RGB")
 
     # --- STEP 5: Save File & Update Database ---
     upload_dir = os.path.join(app.root_path, 'static', 'uploads')

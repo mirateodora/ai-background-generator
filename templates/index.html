@@ -168,7 +168,7 @@
         populateModels(brandSelect.value);
     }
 
-    // --- Loading Screen Logic ---
+    /// --- Loading Screen Logic ---
     const form = document.querySelector('form.needs-validation');
     const overlay = document.getElementById('loadingOverlay');
 
@@ -176,6 +176,15 @@
         // Only show the overlay if the form is fully valid (all required fields are filled)
         if (form.checkValidity()) {
             overlay.style.display = 'flex';
+        }
+    });
+
+    // --- NEW: Fix the Browser Back Button Bug ---
+    // The 'pageshow' event triggers even if the page is loaded from the browser's Back/Forward cache
+    window.addEventListener('pageshow', function(event) {
+        // Force the loading overlay to hide when returning to this page
+        if (overlay) {
+            overlay.style.display = 'none';
         }
     });
 </script>
